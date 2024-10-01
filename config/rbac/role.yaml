@@ -9,12 +9,8 @@ rules:
   resources:
   - auths
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - hyperspike.io

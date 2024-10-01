@@ -35,6 +35,7 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	hyperv1 "hyperspike.io/gitea-operator/api/v1"
 	"hyperspike.io/gitea-spoon/internal/controller"
 	// +kubebuilder:scaffold:imports
 )
@@ -47,6 +48,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
+	utilruntime.Must(hyperv1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 

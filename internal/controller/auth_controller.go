@@ -23,6 +23,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+
+	hyperv1 "hyperspike.io/gitea-operator/api/v1"
 )
 
 // AuthReconciler reconciles a Auth object
@@ -31,7 +33,7 @@ type AuthReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=hyperspike.io,resources=auths,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=hyperspike.io,resources=auths,verbs=get;list;watch
 // +kubebuilder:rbac:groups=hyperspike.io,resources=auths/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=hyperspike.io,resources=auths/finalizers,verbs=update
 
@@ -56,6 +58,6 @@ func (r *AuthReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 func (r *AuthReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		// Uncomment the following line adding a pointer to an instance of the controlled resource as an argument
-		// For().
+		For(&hyperv1.Auth{}).
 		Complete(r)
 }

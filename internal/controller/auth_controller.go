@@ -19,10 +19,14 @@ package controller
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+
+	model "code.gitea.io/gitea/models/auth"
+	"code.gitea.io/gitea/services/auth/source/oauth2"
 
 	hyperv1 "hyperspike.io/gitea-operator/api/v1"
 )
@@ -47,9 +51,31 @@ type AuthReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
 func (r *AuthReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	logger := log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	var auth hyperv1.Auth
+	if err := r.Get(ctx, req.NamespacedName, &auth); err != nil {
+		if errors.IsNotFound(err) {
+			logger.Info("Auth resource not found. Ignoring since object must be deleted")
+			return ctrl.Result{}, nil
+		}
+		logger.Error(err, "Failed to get Auth", "name", req.Name, "namespace", req.Namespace)
+		return ctrl.Result{}, err
+	}
+
+	err := model.CreateSource(ctx, &model.Source{
+		Type:     model.OAuth2,
+		Name:     auth.Name,
+		IsActive: true,
+		Cfg: &oauth2.Source{
+			// ClientID: auth.Spec.ClientID,
+			ClientID: "placeholder",
+		},
+	})
+	if err != nil {
+		logger.Error(err, "Failed to create auth source", "name", auth.Name)
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
 }

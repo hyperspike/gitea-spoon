@@ -10,6 +10,8 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+GO := $(shell which go)
+
 # CONTAINER_TOOL defines the container tool to be used for building images.
 # Be aware that the target commands are only tested with Docker which is
 # scaffolded by default. However, you might want to replace it to use other
@@ -20,6 +22,15 @@ CONTAINER_TOOL ?= docker
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
+
+V ?= 0
+ifeq ($(V), 1)
+	Q =
+	VV = -v
+else
+	Q = @
+	VV =
+endif
 
 .PHONY: all
 all: build
@@ -78,9 +89,15 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 
 ##@ Build
 
-.PHONY: build
-build: manifests generate fmt vet ## Build manager binary.
-	go build -o bin/manager cmd/main.go
+build: manager ## Build manager binary.
+
+manager: manifests generate fmt vet ## Build manager binary.
+	$QCGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GO) build $(VV) \
+		-trimpath \
+		-gcflags all="-trimpath=/src -trimpath=$(PWD)" \
+		-asmflags all="-trimpath=/src -trimpath=$(PWD)" \
+		-installsuffix cgo \
+		-o $@ cmd/main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
@@ -90,8 +107,8 @@ run: manifests generate fmt vet ## Run a controller from your host.
 # (i.e. docker build --platform linux/arm64). However, you must enable docker buildKit for it.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 .PHONY: docker-build
-docker-build: ## Build docker image with the manager.
-	$(CONTAINER_TOOL) build -t ${IMG} .
+docker-build: manager ## Build docker image with the manager.
+	$Q$(CONTAINER_TOOL) build -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.

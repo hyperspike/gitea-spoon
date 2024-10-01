@@ -7,4 +7,9 @@ layout:
 - go.kubebuilder.io/v4
 projectName: gitea-spoon
 repo: hyperspike.io/gitea-spoon
+resources:
+- controller: true
+  domain: hyperspike.io
+  kind: Auth
+  version: v1
 version: "3"

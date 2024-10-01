@@ -87,6 +87,10 @@ lint: golangci-lint ## Run golangci-lint linter
 lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 	$(GOLANGCI_LINT) run --fix
 
+.PHONY: gosec
+gosec: gosecbin ## Run gosec security checks
+	$Q$(GOSEC) ./...
+
 ##@ Build
 
 build: manager ## Build manager binary.
@@ -173,12 +177,14 @@ KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
+GOSEC ?= $(LOCALBIN)/gosec
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.4.3
 CONTROLLER_TOOLS_VERSION ?= v0.16.1
 ENVTEST_VERSION ?= release-0.19
 GOLANGCI_LINT_VERSION ?= v1.60.3
+GOSEC_VERSION ?= v2.21.4
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
@@ -199,6 +205,11 @@ $(ENVTEST): $(LOCALBIN)
 golangci-lint: $(GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
 $(GOLANGCI_LINT): $(LOCALBIN)
 	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint,$(GOLANGCI_LINT_VERSION))
+
+.PHONY: gosec
+gosecbin: $(GOSEC) ## Download gosec locally if necessary.
+$(GOSEC): $(LOCALBIN)
+	$(call go-install-tool,$(GOSEC),github.com/securego/gosec/v2/cmd/gosec,${GOSEC_VERSION})
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary

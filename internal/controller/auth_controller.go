@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -29,6 +30,7 @@ import (
 	"code.gitea.io/gitea/services/auth/source/oauth2"
 
 	hyperv1 "hyperspike.io/gitea-operator/api/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // AuthReconciler reconciles a Auth object
@@ -63,13 +65,27 @@ func (r *AuthReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, err
 	}
 
-	err := model.CreateSource(ctx, &model.Source{
+	clientID, err := r.getSecret(ctx, auth.Namespace, &auth.Spec.ClientID)
+	if err != nil {
+		logger.Error(err, "Failed to get clientID secret", "name", auth.Name)
+		return ctrl.Result{}, err
+	}
+	clientSecret, err := r.getSecret(ctx, auth.Namespace, &auth.Spec.ClientSecret)
+	if err != nil {
+		logger.Error(err, "Failed to get clientSecret secret", "name", auth.Name)
+		return ctrl.Result{}, err
+	}
+	err = model.CreateSource(ctx, &model.Source{
 		Type:     model.OAuth2,
 		Name:     auth.Name,
 		IsActive: true,
 		Cfg: &oauth2.Source{
-			// ClientID: auth.Spec.ClientID,
-			ClientID: "placeholder",
+			Provider:                      auth.Spec.Provider,
+			ClientID:                      clientID,
+			ClientSecret:                  clientSecret,
+			Scopes:                        auth.Spec.Scopes,
+			OpenIDConnectAutoDiscoveryURL: auth.Spec.AutoDiscoveryURL,
+			GroupClaimName:                auth.Spec.GroupClaimName,
 		},
 	})
 	if err != nil {
@@ -78,6 +94,18 @@ func (r *AuthReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	return ctrl.Result{}, nil
+}
+
+// A utility function to get a secret via a secretkeyref/secretkeyselector
+func (r *AuthReconciler) getSecret(ctx context.Context, ns string, secretKeyRef *corev1.SecretKeySelector) (string, error) {
+	secret := &corev1.Secret{}
+	if err := r.Get(ctx, types.NamespacedName{
+		Namespace: ns,
+		Name:      secretKeyRef.Name,
+	}, secret); err != nil {
+		return "", err
+	}
+	return string(secret.Data[secretKeyRef.Key]), nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

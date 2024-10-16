@@ -81,11 +81,11 @@ test-e2e:
 
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter
-	$(GOLANGCI_LINT) run
+	$Q$(GOLANGCI_LINT) run
 
 .PHONY: lint-fix
 lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
-	$(GOLANGCI_LINT) run --fix
+	$Q$(GOLANGCI_LINT) run --fix
 
 .PHONY: gosec
 gosec: gosecbin ## Run gosec security checks

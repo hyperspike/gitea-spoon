@@ -43,6 +43,8 @@ type AuthReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+const authFinalizer = "auth.hyperspike.io/finalizer"
+
 // +kubebuilder:rbac:groups=hyperspike.io,resources=auths,verbs=get;list;watch
 // +kubebuilder:rbac:groups=hyperspike.io,resources=auths/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=hyperspike.io,resources=auths/finalizers,verbs=update
@@ -75,24 +77,24 @@ func (r *AuthReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	if auth.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !containsString(auth.ObjectMeta.Finalizers, "auth.finalizers.hyperspike.io") {
+		if !containsString(auth.ObjectMeta.Finalizers, authFinalizer) {
 			if err := r.addSource(ctx, &auth); err != nil {
 				logger.Error(err, "Failed to add source", "name", auth.Name)
 				return ctrl.Result{}, err
 			}
-			auth.ObjectMeta.Finalizers = append(auth.ObjectMeta.Finalizers, "auth.finalizers.hyperspike.io")
+			auth.ObjectMeta.Finalizers = append(auth.ObjectMeta.Finalizers, authFinalizer)
 			if err := r.Update(ctx, &auth); err != nil {
 				logger.Error(err, "Failed to add finalizer", "name", auth.Name)
 				return ctrl.Result{}, err
 			}
 		}
 	} else {
-		if containsString(auth.ObjectMeta.Finalizers, "auth.finalizers.hyperspike.io") {
+		if containsString(auth.ObjectMeta.Finalizers, authFinalizer) {
 			if err := r.deleteSource(ctx, &auth); err != nil {
 				logger.Error(err, "Failed to delete source", "name", auth.Name)
 				return ctrl.Result{}, err
 			}
-			auth.ObjectMeta.Finalizers = removeString(auth.ObjectMeta.Finalizers, "auth.finalizers.hyperspike.io")
+			auth.ObjectMeta.Finalizers = removeString(auth.ObjectMeta.Finalizers, authFinalizer)
 			if err := r.Update(ctx, &auth); err != nil {
 				logger.Error(err, "Failed to remove finalizer", "name", auth.Name)
 				return ctrl.Result{}, err
@@ -142,7 +144,7 @@ func (r *AuthReconciler) addSource(ctx context.Context, auth *hyperv1.Auth) erro
 func (r *AuthReconciler) deleteSource(ctx context.Context, auth *hyperv1.Auth) error {
 	logger := log.FromContext(ctx)
 	if err := initDB(ctx); err != nil {
-		logger.Error(err, "Failed to initialize database")
+		logger.Error(err, "Failed to initialize database", "name", auth.Name)
 		return err
 	}
 	source, err := model.GetSourceByID(ctx, int64(1))

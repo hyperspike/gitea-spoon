@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.23.1
 
 require (
-	code.gitea.io/gitea v1.22.2
+	code.gitea.io/gitea v1.22.3
 	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2
 	hyperspike.io/gitea-operator v0.0.9
@@ -22,7 +22,7 @@ require (
 	dario.cat/mergo v1.0.1 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	gitea.com/go-chi/binding v0.0.0-20240430071103-39a851e106ed // indirect
-	gitea.com/go-chi/cache v0.2.0 // indirect
+	gitea.com/go-chi/cache v0.2.1 // indirect
 	gitea.com/go-chi/captcha v0.0.0-20240315150714-fb487f629098 // indirect
 	gitea.com/go-chi/session v0.0.0-20240316035857-16768d98ec96 // indirect
 	gitea.com/lunny/levelqueue v0.4.2-0.20230414023320-3c0159fe0fe4 // indirect
@@ -151,7 +151,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/meilisearch/meilisearch-go v0.26.2 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.26 // indirect
-	github.com/microsoft/go-mssqldb v1.7.0 // indirect
+	github.com/microsoft/go-mssqldb v1.7.2 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/minio/minio-go/v7 v7.0.77 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

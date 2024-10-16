@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,6 +28,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	model "code.gitea.io/gitea/models/auth"
+	"code.gitea.io/gitea/models/db"
+	"code.gitea.io/gitea/modules/setting"
+	service "code.gitea.io/gitea/services/auth"
 	"code.gitea.io/gitea/services/auth/source/oauth2"
 
 	hyperv1 "hyperspike.io/gitea-operator/api/v1"
@@ -65,15 +69,55 @@ func (r *AuthReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, err
 	}
 
+	if auth.Spec.Provider == "" {
+		logger.Info("Auth provider not set. Ignoring")
+		return ctrl.Result{}, nil
+	}
+
+	if auth.ObjectMeta.DeletionTimestamp.IsZero() {
+		if !containsString(auth.ObjectMeta.Finalizers, "auth.finalizers.hyperspike.io") {
+			if err := r.addSource(ctx, &auth); err != nil {
+				logger.Error(err, "Failed to add source", "name", auth.Name)
+				return ctrl.Result{}, err
+			}
+			auth.ObjectMeta.Finalizers = append(auth.ObjectMeta.Finalizers, "auth.finalizers.hyperspike.io")
+			if err := r.Update(ctx, &auth); err != nil {
+				logger.Error(err, "Failed to add finalizer", "name", auth.Name)
+				return ctrl.Result{}, err
+			}
+		}
+	} else {
+		if containsString(auth.ObjectMeta.Finalizers, "auth.finalizers.hyperspike.io") {
+			if err := r.deleteSource(ctx, &auth); err != nil {
+				logger.Error(err, "Failed to delete source", "name", auth.Name)
+				return ctrl.Result{}, err
+			}
+			auth.ObjectMeta.Finalizers = removeString(auth.ObjectMeta.Finalizers, "auth.finalizers.hyperspike.io")
+			if err := r.Update(ctx, &auth); err != nil {
+				logger.Error(err, "Failed to remove finalizer", "name", auth.Name)
+				return ctrl.Result{}, err
+			}
+		}
+	}
+
+	return ctrl.Result{}, nil
+}
+
+func (r *AuthReconciler) addSource(ctx context.Context, auth *hyperv1.Auth) error {
+	logger := log.FromContext(ctx)
+	if err := initDB(ctx); err != nil {
+		logger.Error(err, "Failed to initialize database")
+		return err
+	}
 	clientID, err := r.getSecret(ctx, auth.Namespace, &auth.Spec.ClientID)
 	if err != nil {
 		logger.Error(err, "Failed to get clientID secret", "name", auth.Name)
-		return ctrl.Result{}, err
+		return err
 	}
 	clientSecret, err := r.getSecret(ctx, auth.Namespace, &auth.Spec.ClientSecret)
 	if err != nil {
 		logger.Error(err, "Failed to get clientSecret secret", "name", auth.Name)
-		return ctrl.Result{}, err
+		return err
 	}
 	err = model.CreateSource(ctx, &model.Source{
 		Type:     model.OAuth2,
@@ -90,10 +134,41 @@ func (r *AuthReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	})
 	if err != nil {
 		logger.Error(err, "Failed to create auth source", "name", auth.Name)
-		return ctrl.Result{}, err
+		return err
+	}
+	return nil
+}
+
+func (r *AuthReconciler) deleteSource(ctx context.Context, auth *hyperv1.Auth) error {
+	logger := log.FromContext(ctx)
+	if err := initDB(ctx); err != nil {
+		logger.Error(err, "Failed to initialize database")
+		return err
+	}
+	source, err := model.GetSourceByID(ctx, int64(1))
+	if err != nil {
+		return err
 	}
 
-	return ctrl.Result{}, nil
+	return service.DeleteSource(ctx, source)
+}
+
+func initDB(ctx context.Context) error {
+	logger := log.FromContext(ctx)
+	setting.MustInstalled()
+	setting.LoadDBSetting()
+
+	if setting.Database.Type == "" {
+		err := fmt.Errorf(`Database settings are missing from the configuration file: %q
+Ensure you are running in the correct environment or set the correct configuration file with -c.
+If this is the intended configuration file complete the [database] section.`, setting.CustomConf)
+		logger.Error(err, "Failed to load database settings")
+		return err
+	}
+	if err := db.InitEngine(ctx); err != nil {
+		return fmt.Errorf("unable to initialize the database using the configuration in %q. Error: %w", setting.CustomConf, err)
+	}
+	return nil
 }
 
 // A utility function to get a secret via a secretkeyref/secretkeyselector
@@ -106,6 +181,24 @@ func (r *AuthReconciler) getSecret(ctx context.Context, ns string, secretKeyRef 
 		return "", err
 	}
 	return string(secret.Data[secretKeyRef.Key]), nil
+}
+
+func containsString(slice []string, s string) bool {
+	for _, v := range slice {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
+func removeString(slice []string, s string) []string {
+	for i, v := range slice {
+		if v == s {
+			return append(slice[:i], slice[i+1:]...)
+		}
+	}
+	return slice
 }
 
 // SetupWithManager sets up the controller with the Manager.

@@ -121,18 +121,21 @@ func (r *AuthReconciler) addSource(ctx context.Context, auth *hyperv1.Auth) erro
 		logger.Error(err, "Failed to get clientSecret secret", "name", auth.Name)
 		return err
 	}
+	src := &oauth2.Source{
+		Provider:                      auth.Spec.Provider,
+		ClientID:                      clientID,
+		ClientSecret:                  clientSecret,
+		Scopes:                        auth.Spec.Scopes,
+		OpenIDConnectAutoDiscoveryURL: auth.Spec.AutoDiscoveryURL,
+		GroupClaimName:                auth.Spec.GroupClaimName,
+		CustomURLMapping:              nil,
+	}
+	logger.Info("Creating source", "name", auth.Name, "provider", src.Provider)
 	err = model.CreateSource(ctx, &model.Source{
 		Type:     model.OAuth2,
 		Name:     auth.Name,
 		IsActive: true,
-		Cfg: &oauth2.Source{
-			Provider:                      auth.Spec.Provider,
-			ClientID:                      clientID,
-			ClientSecret:                  clientSecret,
-			Scopes:                        auth.Spec.Scopes,
-			OpenIDConnectAutoDiscoveryURL: auth.Spec.AutoDiscoveryURL,
-			GroupClaimName:                auth.Spec.GroupClaimName,
-		},
+		Cfg:      src,
 	})
 	if err != nil {
 		logger.Error(err, "Failed to create auth source", "name", auth.Name)
@@ -157,7 +160,9 @@ func (r *AuthReconciler) deleteSource(ctx context.Context, auth *hyperv1.Auth) e
 
 func initDB(ctx context.Context) error {
 	logger := log.FromContext(ctx)
-	setting.MustInstalled()
+	setting.InitCfgProvider("/data/gitea/conf/app.ini")
+	// setting.LoadCommonSettings()
+	// setting.MustInstalled()
 	setting.LoadDBSetting()
 
 	if setting.Database.Type == "" {

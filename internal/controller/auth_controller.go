@@ -161,8 +161,8 @@ func (r *AuthReconciler) deleteSource(ctx context.Context, auth *hyperv1.Auth) e
 func initDB(ctx context.Context) error {
 	logger := log.FromContext(ctx)
 	setting.InitCfgProvider("/data/gitea/conf/app.ini")
-	//setting.LoadCommonSettings()
-	//setting.MustInstalled()
+	// setting.LoadCommonSettings()
+	// setting.MustInstalled()
 	setting.LoadDBSetting()
 
 	if setting.Database.Type == "" {

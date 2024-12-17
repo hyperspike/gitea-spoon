@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"os"
@@ -38,6 +39,7 @@ import (
 
 	hyperv1 "hyperspike.io/gitea-operator/api/v1"
 	"hyperspike.io/gitea-spoon/internal/controller"
+	"hyperspike.io/gitea-spoon/internal/local"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -167,6 +169,15 @@ func main() {
 		setupLog.Error(err, "unable to set up ready check")
 		os.Exit(1)
 	}
+
+	ctx := context.Background()
+	l := local.New(ctx)
+	go func() {
+		if err := l.Start(); err != nil {
+			setupLog.Error(err, "unable to start local reconciler")
+			os.Exit(1)
+		}
+	}()
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {

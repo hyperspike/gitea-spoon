@@ -6,7 +6,7 @@ toolchain go1.23.1
 
 require (
 	code.gitea.io/gitea v1.22.6
-	github.com/onsi/ginkgo/v2 v2.22.1
+	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
 	hyperspike.io/gitea-operator v0.0.10
 	k8s.io/api v0.32.0

@@ -95,7 +95,7 @@ func (l *Local) validateAdminPassword(username, password string) error {
 		url = "https://localhost:3000"
 		client.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
+				InsecureSkipVerify: true, // #nosec G402
 				MinVersion:         tls.VersionTLS12,
 			},
 		}
@@ -126,10 +126,10 @@ func (l *Local) initDB() error {
 	setting.LoadDBSetting()
 
 	if setting.Database.Type == "" {
-		err := fmt.Errorf(`Database settings are missing from the configuration file: %q
+		err := fmt.Errorf(`database settings are missing from the configuration file: %q
 Ensure you are running in the correct environment or set the correct configuration file with -c.
-If this is the intended configuration file complete the [database] section.`, setting.CustomConf)
-		return fmt.Errorf("Failed to load database settings: %w", err)
+If this is the intended configuration file complete the [database] section`, setting.CustomConf)
+		return fmt.Errorf("failed to load database settings: %w", err)
 	}
 	if err := db.InitEngine(l.ctx); err != nil {
 		return fmt.Errorf("unable to initialize the database using the configuration in %q. Error: %w", setting.CustomConf, err)

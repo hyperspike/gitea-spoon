@@ -76,25 +76,25 @@ func (r *AuthReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, nil
 	}
 
-	if auth.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !containsString(auth.ObjectMeta.Finalizers, authFinalizer) {
+	if auth.DeletionTimestamp.IsZero() {
+		if !containsString(auth.Finalizers, authFinalizer) {
 			if err := r.addSource(ctx, &auth); err != nil {
 				logger.Error(err, "Failed to add source", "name", auth.Name)
 				return ctrl.Result{}, err
 			}
-			auth.ObjectMeta.Finalizers = append(auth.ObjectMeta.Finalizers, authFinalizer)
+			auth.Finalizers = append(auth.Finalizers, authFinalizer)
 			if err := r.Update(ctx, &auth); err != nil {
 				logger.Error(err, "Failed to add finalizer", "name", auth.Name)
 				return ctrl.Result{}, err
 			}
 		}
 	} else {
-		if containsString(auth.ObjectMeta.Finalizers, authFinalizer) {
+		if containsString(auth.Finalizers, authFinalizer) {
 			if err := r.deleteSource(ctx, &auth); err != nil {
 				logger.Error(err, "Failed to delete source", "name", auth.Name)
 				return ctrl.Result{}, err
 			}
-			auth.ObjectMeta.Finalizers = removeString(auth.ObjectMeta.Finalizers, authFinalizer)
+			auth.Finalizers = removeString(auth.Finalizers, authFinalizer)
 			if err := r.Update(ctx, &auth); err != nil {
 				logger.Error(err, "Failed to remove finalizer", "name", auth.Name)
 				return ctrl.Result{}, err
@@ -166,14 +166,14 @@ func initDB(ctx context.Context) error {
 	setting.LoadDBSetting()
 
 	if setting.Database.Type == "" {
-		err := fmt.Errorf(`Database settings are missing from the configuration file: %q
+		err := fmt.Errorf(`database settings are missing from the configuration file: %q
 Ensure you are running in the correct environment or set the correct configuration file with -c.
-If this is the intended configuration file complete the [database] section.`, setting.CustomConf)
+If this is the intended configuration file complete the [database] section`, setting.CustomConf)
 		logger.Error(err, "Failed to load database settings")
 		return err
 	}
 	if err := db.InitEngine(ctx); err != nil {
-		return fmt.Errorf("unable to initialize the database using the configuration in %q. Error: %w", setting.CustomConf, err)
+		return fmt.Errorf("unable to initialize the database using the configuration in %q. error: %w", setting.CustomConf, err)
 	}
 	return nil
 }

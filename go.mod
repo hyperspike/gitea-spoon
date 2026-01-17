@@ -1,8 +1,6 @@
 module hyperspike.io/gitea-spoon
 
-go 1.23.0
-
-toolchain go1.23.1
+go 1.25.0
 
 require (
 	code.gitea.io/gitea v1.22.6

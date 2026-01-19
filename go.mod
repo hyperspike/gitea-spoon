@@ -5,7 +5,7 @@ go 1.25.3
 require (
 	code.gitea.io/gitea v1.25.3
 	github.com/onsi/ginkgo/v2 v2.27.5
-	github.com/onsi/gomega v1.38.3
+	github.com/onsi/gomega v1.39.0
 	hyperspike.io/gitea-operator v0.0.16
 	k8s.io/api v0.35.0
 	k8s.io/apimachinery v0.35.0

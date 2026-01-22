@@ -3,7 +3,7 @@ module hyperspike.io/gitea-spoon
 go 1.25.3
 
 require (
-	code.gitea.io/gitea v1.25.3
+	code.gitea.io/gitea v1.25.4
 	github.com/onsi/ginkgo/v2 v2.27.5
 	github.com/onsi/gomega v1.39.0
 	hyperspike.io/gitea-operator v0.0.16

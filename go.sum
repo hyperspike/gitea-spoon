@@ -4,8 +4,8 @@ cloud.google.com/go/compute/metadata v0.9.0 h1:pDUj4QMoPejqq20dK0Pg2N4yG9zIkYGdB
 cloud.google.com/go/compute/metadata v0.9.0/go.mod h1:E0bWwX5wTnLPedCKqk3pJmVgCBSM6qQI1yTBdEb3C10=
 code.gitea.io/actions-proto-go v0.4.1 h1:l0EYhjsgpUe/1VABo2eK7zcoNX2W44WOnb0MSLrKfls=
 code.gitea.io/actions-proto-go v0.4.1/go.mod h1:mn7Wkqz6JbnTOHQpot3yDeHx+O5C9EGhMEE+htvHBas=
-code.gitea.io/gitea v1.25.3 h1:eI6LYaupqIO81tdzPSOv0no+noaKlu8K4/GeCIrLwxQ=
-code.gitea.io/gitea v1.25.3/go.mod h1:76pZAYezv8CjK8pBXHmtc6YdJwM7X50MKVvzfWTVvXk=
+code.gitea.io/gitea v1.25.4 h1:NVY3EtttCCEST5pwmxqHknJ9WFRWHobxIjNzxhYqZWw=
+code.gitea.io/gitea v1.25.4/go.mod h1:76pZAYezv8CjK8pBXHmtc6YdJwM7X50MKVvzfWTVvXk=
 code.gitea.io/sdk/gitea v0.22.1 h1:7K05KjRORyTcTYULQ/AwvlVS6pawLcWyXZcTr7gHFyA=
 code.gitea.io/sdk/gitea v0.22.1/go.mod h1:yyF5+GhljqvA30sRDreoyHILruNiy4ASufugzYg0VHM=
 codeberg.org/gusted/mcaptcha v0.0.0-20220723083913-4f3072e1d570 h1:TXbikPqa7YRtfU9vS6QJBg77pUvbEb6StRdZO8t1bEY=

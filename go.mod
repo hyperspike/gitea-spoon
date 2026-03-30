@@ -69,7 +69,7 @@ require (
 	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cloudflare/circl v1.6.1 // indirect
+	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/couchbase/go-couchbase v0.1.1 // indirect
 	github.com/couchbase/gomemcached v0.3.3 // indirect
 	github.com/couchbase/goutils v0.1.2 // indirect
@@ -94,8 +94,8 @@ require (
 	github.com/go-enry/go-enry/v2 v2.9.2 // indirect
 	github.com/go-enry/go-oniguruma v1.2.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
-	github.com/go-git/go-billy/v5 v5.6.2 // indirect
-	github.com/go-git/go-git/v5 v5.16.5 // indirect
+	github.com/go-git/go-billy/v5 v5.8.0 // indirect
+	github.com/go-git/go-git/v5 v5.17.1 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-ldap/ldap/v3 v3.4.11 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect

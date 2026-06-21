@@ -21,7 +21,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -45,9 +45,11 @@ func New(ctx context.Context) *Local {
 }
 
 func sanitizeInput(input string) string {
-	escaped := strings.ReplaceAll(input, "\n", "")
-	escaped = strings.ReplaceAll(escaped, "\r", "")
-	return escaped
+	// Replace newlines and carriage returns to prevent log injection
+	sanitized := input
+	sanitized = strings.ReplaceAll(sanitized, "\n", "")
+	sanitized = strings.ReplaceAll(sanitized, "\r", "")
+	return sanitized
 }
 
 // Reconcile reads that state of the cluster for a Local object and makes changes based on the state read
@@ -55,7 +57,7 @@ func sanitizeInput(input string) string {
 func (l *Local) Start() error {
 	for {
 		if err := l.reconcileAdminPassword(); err != nil {
-			log.Printf("unable to reconcile admin password [%v]", err)
+			slog.Error("unable to reconcile admin password", slog.String("error", err.Error()))
 		}
 		time.Sleep(7 * time.Second)
 	}
@@ -74,7 +76,7 @@ func (l *Local) reconcileAdminPassword() error {
 	if err := l.initDB(); err != nil {
 		return err
 	}
-	log.Printf("reconciling admin password for %s", sanitizeInput(username)) // #nosec G706 - sanitizeInput is used to prevent log injection
+	slog.Info("reconciling admin password", slog.String("username", sanitizeInput(username))) // #nosec G706 - sanitizeInput is used to prevent log injection
 
 	if err := l.validateAdminPassword(username, password); err == nil {
 		return nil
@@ -91,7 +93,7 @@ func (l *Local) reconcileAdminPassword() error {
 	if err := user.UpdateUserCols(l.ctx, gitUser, "passwd", "passwd_hash_algo", "salt", "must_change_password"); err != nil {
 		return fmt.Errorf("unable to update user %s: %w", username, err)
 	}
-	log.Printf("successfully reconciled admin password for %s\n", sanitizeInput(username)) // #nosec G706 - sanitizeInput is used to prevent log injection
+	slog.Info("updated admin password", slog.String("username", sanitizeInput(username))) // #nosec G706 - sanitizeInput is used to prevent log injection
 	return nil
 }
 
@@ -122,7 +124,7 @@ func (l *Local) validateAdminPassword(username, password string) error {
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("unable to authenticate user: %s", resp.Status)
 	}
-	log.Printf("successfully authenticated user %s\n", sanitizeInput(username)) // #nosec G706 - sanitizeInput is used to prevent log injection
+	slog.Info("successfully authenticated user", slog.String("username", sanitizeInput(username))) // #nosec G706 - sanitizeInput is used to prevent log injection
 	return nil
 }
 

@@ -181,10 +181,10 @@ GOSEC ?= $(LOCALBIN)/gosec
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.4.3
-CONTROLLER_TOOLS_VERSION ?= v0.20.0
+CONTROLLER_TOOLS_VERSION ?= v0.21.0
 ENVTEST_VERSION ?= release-0.19
-GOLANGCI_LINT_VERSION ?= v2.8.0
-GOSEC_VERSION ?= v2.22.11
+GOLANGCI_LINT_VERSION ?= v2.12.2
+GOSEC_VERSION ?= v2.27.1
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.

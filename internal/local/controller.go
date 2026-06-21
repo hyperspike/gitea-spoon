@@ -24,6 +24,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"code.gitea.io/gitea/models/db"
@@ -41,6 +42,12 @@ func New(ctx context.Context) *Local {
 		ctx = context.TODO()
 	}
 	return &Local{ctx: ctx}
+}
+
+func sanitizeInput(input string) string {
+	escaped := strings.ReplaceAll(input, "\n", "")
+	escaped = strings.ReplaceAll(escaped, "\r", "")
+	return escaped
 }
 
 // Reconcile reads that state of the cluster for a Local object and makes changes based on the state read
@@ -67,7 +74,7 @@ func (l *Local) reconcileAdminPassword() error {
 	if err := l.initDB(); err != nil {
 		return err
 	}
-	log.Printf("reconciling admin password for %s", username)
+	log.Printf("reconciling admin password for %s", sanitizeInput(username)) // #nosec G706 - sanitizeInput is used to prevent log injection
 
 	if err := l.validateAdminPassword(username, password); err == nil {
 		return nil
@@ -84,7 +91,7 @@ func (l *Local) reconcileAdminPassword() error {
 	if err := user.UpdateUserCols(l.ctx, gitUser, "passwd", "passwd_hash_algo", "salt", "must_change_password"); err != nil {
 		return fmt.Errorf("unable to update user %s: %w", username, err)
 	}
-	log.Printf("successfully reconciled admin password for %s\n", username)
+	log.Printf("successfully reconciled admin password for %s\n", sanitizeInput(username)) // #nosec G706 - sanitizeInput is used to prevent log injection
 	return nil
 }
 
@@ -115,7 +122,7 @@ func (l *Local) validateAdminPassword(username, password string) error {
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("unable to authenticate user: %s", resp.Status)
 	}
-	log.Printf("successfully authenticated user %s\n", username)
+	log.Printf("successfully authenticated user %s\n", sanitizeInput(username)) // #nosec G706 - sanitizeInput is used to prevent log injection
 	return nil
 }
 

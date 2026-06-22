@@ -19,7 +19,7 @@ require (
 	code.gitea.io/actions-proto-go v0.4.1 // indirect
 	codeberg.org/gusted/mcaptcha v0.0.0-20220723083913-4f3072e1d570 // indirect
 	dario.cat/mergo v1.0.2 // indirect
-	filippo.io/edwards25519 v1.1.0 // indirect
+	filippo.io/edwards25519 v1.1.1 // indirect
 	gitea.com/go-chi/binding v0.0.0-20240430071103-39a851e106ed // indirect
 	gitea.com/go-chi/cache v0.2.1 // indirect
 	gitea.com/go-chi/captcha v0.0.0-20240315150714-fb487f629098 // indirect
